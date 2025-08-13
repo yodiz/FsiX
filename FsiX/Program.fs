@@ -27,9 +27,10 @@ let main () =
         let prompt =
             PrettyPrompt.Prompt(
                 persistentHistoryFilepath = "./.fsix_history",
-                callbacks = FsiCallBacks(app),
+                callbacks = FsiCallBacks app,
                 configuration = app.GetPromptConfiguration()
             )
+        app.OutStream.Enable()
 
         while true do
             let! response = prompt.ReadLineAsync()

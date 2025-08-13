@@ -1,5 +1,6 @@
 module FsiX.AppState
 
+open System
 open System.IO
 
 open System.Threading
@@ -17,7 +18,32 @@ type private ReloadingState =
 
 type FilePath = string
 
-type AppState private (sln: Solution, reloading, session: FsiEvaluationSession, globalConfig, localConfig) =
+
+type BufferedStdoutWriter() =
+    inherit TextWriter()
+
+    let realStdout = Console.Out
+    let mutable isEnabled = false
+
+    override _.Encoding = realStdout.Encoding
+
+    override _.Write(value: char) =
+        if isEnabled then realStdout.Write value
+
+    override _.Write(value: string) =
+        if isEnabled then realStdout.Write value
+
+    override _.Write(bufferArr: char[], index: int, count: int) =
+        if isEnabled then realStdout.Write(bufferArr, index, count)
+
+    member _.Enable() =
+      isEnabled <- true
+
+    override _.Flush() =
+        realStdout.Flush()
+
+
+type AppState private (sln: Solution, reloading, session: FsiEvaluationSession, globalConfig, localConfig, outStream) =
     member _.Solution = sln
     member _.InteractiveChecker = session.InteractiveChecker
 
@@ -26,6 +52,7 @@ type AppState private (sln: Solution, reloading, session: FsiEvaluationSession, 
             session.EvalInteraction(code, token)
         with _ ->
             ()
+    member _.OutStream = outStream
 
     member this.GetPromptConfiguration() =
         this.EvalCode(globalConfig, CancellationToken.None)
@@ -63,12 +90,13 @@ type AppState private (sln: Solution, reloading, session: FsiEvaluationSession, 
             let fsiConfig = FsiEvaluationSession.GetDefaultConfiguration()
             let args = solutionToFsiArgs sln
 
+            let out = new BufferedStdoutWriter()
             let fsiSession =
                 FsiEvaluationSession.Create(
                     fsiConfig,
                     args,
                     new StreamReader(Stream.Null),
-                    stdout,
+                    out,
                     stdout,
                     collectible = true
                 )
@@ -81,5 +109,5 @@ type AppState private (sln: Solution, reloading, session: FsiEvaluationSession, 
                 { Agent = agent; FsWatcher = watch }
 
             let! globalConfig, localConfig = Task.map2 tuple2 globalConfigTask localConfigTask
-            return AppState(sln, reloadState, fsiSession, globalConfig, localConfig)
+            return AppState(sln, reloadState, fsiSession, globalConfig, localConfig, out)
         }
