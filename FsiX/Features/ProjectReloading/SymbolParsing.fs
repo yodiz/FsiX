@@ -22,11 +22,14 @@ type NamespacePath =
 
     static let longIdToList (l: LongIdent) =
         l |> Seq.rev |> Seq.map _.idText |> Seq.toList
+    static let longIdToListFantomas (l: Fantomas.FCS.Syntax.LongIdent) =
+        l |> Seq.rev |> Seq.map _.idText |> Seq.toList
 
     static member addLongId l (NamespacePath p) =
         NamespacePath(List.append (longIdToList l) p)
 
     static member ofLongId l = NamespacePath <| longIdToList l
+    static member ofLongIdFantomas l = NamespacePath <| longIdToListFantomas l
 
     member this.IsIn(NamespacePath biggerPath) =
         match this with
