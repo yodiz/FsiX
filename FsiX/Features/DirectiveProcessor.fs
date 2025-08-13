@@ -2,34 +2,25 @@ module FsiX.Features.DirectiveProcessor
 
 #nowarn "57"
 
-open FSharp.Compiler.Syntax
-open FSharp.Compiler.CodeAnalysis
+open System.IO
 open FSharpPlus
+open Fantomas.Core
+open Fantomas.FCS.Syntax
 open FsiX.AppState
 open FsiX.ProjectReloading.SymbolParsing
 
-let runOpenDirective fileToOpen (app: AppState) token =
-    let fileToOpen = System.IO.Path.GetFullPath fileToOpen
-    let fsOpts = 
-      match Map.tryFind fileToOpen app.Solution.Files with 
-      | Some opts -> opts
-      | None -> failwith $"Cannot find project for file {fileToOpen}!"
-    let checker = app.InteractiveChecker
+let runOpenDirective fileToOpen (app: AppState) token = task {
+    let fileToOpen = Path.GetFullPath fileToOpen
+    let! file = File.ReadAllTextAsync fileToOpen
 
-    let snapshot =
-        FSharpProjectSnapshot.FromOptions(fsOpts, DocumentSource.FileSystem)
-        |> Async.RunSynchronously
+    let! [|res, _|] = CodeFormatter.ParseAsync(false, file)
 
-    let parsedResults =
-        checker.ParseFile(fileToOpen, snapshot) |> Async.RunSynchronously
-
-    let (ParsedInput.ImplFile(ParsedImplFileInput(contents = contents))) =
-        parsedResults.ParseTree
+    let (ParsedInput.ImplFile(ParsedImplFileInput(contents = contents))) = res
 
     let [ SynModuleOrNamespace(decls = codeLines; longId = l) ] = contents
 
     let runOpen (l: LongIdent) =
-        let path = NamespacePath.ofLongId l |> _.ToString()
+        let path = NamespacePath.ofLongIdFantomas l |> _.ToString()
         app.EvalCode($"open {path}", token)
 
     runOpen l
@@ -41,6 +32,7 @@ let runOpenDirective fileToOpen (app: AppState) token =
             | SynOpenDeclTarget.ModuleOrNamespace(longId = l) -> runOpen l.LongIdent
             | SynOpenDeclTarget.Type(typeName = t) -> () //todo
         | _ -> ()
+}
 
 let runReloadDirective commandStrWords (app: AppState) token =
     let fileToReload =
@@ -58,7 +50,7 @@ let runAnyDirective (commandStr: string) (app: AppState) token =
     | "#reload"
     | "#r" -> runReloadDirective commandStrWords app token
     | "#open"
-    | "#o" -> runOpenDirective commandStrWords[1] app token |> konst Task.result ()
+    | "#o" -> runOpenDirective commandStrWords[1] app token
     | _ -> app.EvalCode(commandStr, token) |> konst Task.result ()
 
 #warn "57"
