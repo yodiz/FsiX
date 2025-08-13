@@ -165,6 +165,7 @@ let rewriteParsedExpr (parsed: Oak) =
 
     Oak(parsed.ParsedHashDirectives, namespaces, parsed.Range)
 
+open System
 let rewriteCompExpr code =
     async {
         let! parsed = parse code
@@ -178,8 +179,16 @@ let rewriteCompExpr code =
                 let rewrittenAst = rewriteParsedExpr parsed.tree
                 let! code = CodeFormatter.FormatOakAsync rewrittenAst |>> String.trimEnd " \n"
 
+                let logCode code = 
+                  Console.ForegroundColor <- ConsoleColor.Gray;
+                  Console.WriteLine("\u001b[90mRewriting user computation expresison input to: \n" + code + "\u001b[0m")
+                  Console.ResetColor()
+
                 if parsed.hasTupleHack then
-                    return code.Substring(0, code.Length - 2)
+                    let code = code.Substring(0, code.Length - 2)
+                    logCode code
+                    return code
                 else
+                    logCode code
                     return code
     }
