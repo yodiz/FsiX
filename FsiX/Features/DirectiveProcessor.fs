@@ -10,7 +10,10 @@ open FsiX.ProjectReloading.SymbolParsing
 
 let runOpenDirective fileToOpen (app: AppState) token =
     let fileToOpen = System.IO.Path.GetFullPath fileToOpen
-    let fsOpts = Map.find fileToOpen app.Solution.Files
+    let fsOpts = 
+      match Map.tryFind fileToOpen app.Solution.Files with 
+      | Some opts -> opts
+      | None -> failwith $"Cannot find project for file {fileToOpen}!"
     let checker = app.InteractiveChecker
 
     let snapshot =
