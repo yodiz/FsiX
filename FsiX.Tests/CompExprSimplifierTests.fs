@@ -21,6 +21,8 @@ let tests =
           <| fun _ -> Expect.isFalse (isCompExpr "let a = 10") "let a = 10 - no comp expr"
           testCase "test let bang"
           <| fun _ -> Expect.isTrue (isCompExpr "let! a = 10") "let! a = 10 - comp expr"
+          testCase "test let bang tab"
+          <| fun _ -> Expect.isTrue (isCompExpr "   let! a = 10") "let! a = 10 - comp expr"
           testCase "test let bang multiline"
           <| fun _ -> Expect.isTrue (isCompExpr "let a = 10\nlet! b = 20") "let a =10\nlet! b = 20 - comp expr"
           testCase "test if bang"
@@ -51,6 +53,10 @@ let tests =
           testCase "test bang rewrite"
           <| fun _ ->
               let code = "let! a = 10"
+              Expect.equal (rewriteExpr code) "let a = (10).Run()\n" "let bang rewrite"
+          testCase "test bang rewrite tab"
+          <| fun _ ->
+              let code = "    let! a = 10"
               Expect.equal (rewriteExpr code) "let a = (10).Run()\n" "let bang rewrite"
           testCase "test bang rewrite multiline"
           <| fun _ ->
