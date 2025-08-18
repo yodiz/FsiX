@@ -48,15 +48,9 @@ type AppState private (sln: Solution, session: FsiEvaluationSession, globalConfi
     member this.EvalCode(code, token) =
         try
             session.EvalInteraction(code, token)
-            (*
-            let firstKeyword = 
-              code 
-              |> String.split " "
-              |> Seq.tryHead 
-              |> Option.defaultValue ""
-            if firstKeyword = "open"
-            *)
-            handleNewAsmFromRepl (Array.last session.DynamicAssemblies) reloadingState
+            if code.Contains "open" then
+              reloadingState <- getOpenModules code reloadingState
+            reloadingState <- handleNewAsmFromRepl (Array.last session.DynamicAssemblies) reloadingState
             //session.AddBoundValue("assemblies", session.DynamicAssemblies)
         with _ ->
             ()

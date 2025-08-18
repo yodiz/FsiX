@@ -180,9 +180,7 @@ let rewriteCompExpr code =
                 let! code = CodeFormatter.FormatOakAsync rewrittenAst |>> String.trimEnd " \n"
 
                 let logCode code = 
-                  Console.ForegroundColor <- ConsoleColor.Gray;
                   Console.WriteLine("\u001b[90mRewriting user computation expresison input to: \n" + code + "\u001b[0m")
-                  Console.ResetColor()
 
                 if parsed.hasTupleHack then
                     let code = code.Substring(0, code.Length - 2)

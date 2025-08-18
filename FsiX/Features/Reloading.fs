@@ -24,6 +24,7 @@ type Method = {
 type State = {
   Methods: Map<string, Method list>
   LastOpenModules: string list
+  LastAssembly: Assembly Option
 }
 
 type Event = 
@@ -56,7 +57,7 @@ let mkReloadingState (sln: FsiX.ProjectLoading.Solution) =
     |> Seq.groupBy _.MethodInfo.Name
     |> Seq.map (fun (methodName, methods) -> methodName, List.ofSeq methods)
     |> Map.ofSeq
-  {Methods = methods; LastOpenModules = []}
+  {Methods = methods; LastOpenModules = []; LastAssembly = None}
 
 open FSharpPlus
 
@@ -70,7 +71,11 @@ let detourMethod (method: MethodBase) (replacement: MethodBase) =
   |> fun x -> x.Invoke(null, [|method; replacement|])
   |> ignore
 
+open FuzzySharp
 let handleNewAsmFromRepl (asm: Assembly) (st: State) = 
+  match st.LastAssembly with 
+  | Some prev when prev = asm -> st
+  | _ ->
   for m in getAllMethods asm do
     let potentialReplacement = 
       Map.tryFind m.MethodInfo.Name st.Methods
@@ -82,11 +87,13 @@ let handleNewAsmFromRepl (asm: Assembly) (st: State) =
           && existingMethod.FullName.Contains m.FullName
         ) 
         >> Seq.sortByDescending (fun existingMethod -> 
-            let lastOpenedModuleName = 
-              match st.LastOpenModules with
-              | x :: _ -> x
-              | _ -> ""
-            FuzzySharp.Fuzz.Ratio(lastOpenedModuleName + m.FullName, existingMethod.FullName)
+            let moduleCandidate = 
+              st.LastOpenModules
+              |> Seq.map (fun o -> Fuzz.Ratio(o + m.FullName, existingMethod.FullName))
+              |> Seq.tryHead
+              |> Option.defaultValue 0
+            let noModuleCandidate = Fuzz.Ratio(m.FullName, existingMethod.FullName)
+            max moduleCandidate noModuleCandidate
         )
         >> Seq.tryHead
       )
@@ -96,3 +103,16 @@ let handleNewAsmFromRepl (asm: Assembly) (st: State) =
       Console.WriteLine("\u001b[90m Updating method " + methodToReplace.FullName + "\u001b[0m")
       detourMethod methodToReplace.MethodInfo m.MethodInfo
       ()
+  {st with LastAssembly = Some asm}
+
+
+let getOpenModules replCode st = 
+  let modules =  
+    String.split [" "; "\n"] replCode
+    |> Seq.filter ((<>) "")
+    |> Seq.chunkBySize 2
+    |> Seq.filter (Array.tryHead >> Option.map ((=) "open") >> Option.defaultValue false)
+    |> Seq.map (fun arr -> arr[1])
+    |> Seq.toList
+  {st with LastOpenModules = modules @ st.LastOpenModules}
+  
