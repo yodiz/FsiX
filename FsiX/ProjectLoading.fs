@@ -48,18 +48,6 @@ let getSourceOrderedFiles sln =
     |> Seq.collect (fun proj -> proj.SourceFiles |> Seq.map (fun file -> file, proj))
     |> List.ofSeq
 
-let solutionToFsiArgs (sln: Solution) =
-    let dlls = sln.Projects |> Seq.map _.TargetPath |> Seq.rev |> Seq.toList
-
-    let nugets =
-        sln.Projects
-        |> Seq.collect _.PackageReferences
-        |> Seq.map _.FullPath
-        |> Seq.distinct
-        |> Seq.toList
-
-    [| "fsi"; yield! nugets |> Seq.append dlls |> Seq.map (sprintf "-r:%s") |]
-
 let getTopPath' (paths: string list) =
     let splitPath (p: string) =
         Directory.GetParent p

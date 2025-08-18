@@ -52,9 +52,9 @@ let getFsCompletions (fsiSession: Shell.FsiEvaluationSession) text caret word =
             |> _.ToFormattedString()
 
         CompletionItem(
-            replacementText = declInfo.NameInCode,
+            replacementText = "FAGGOT",
             getExtendedDescription = (fun _ -> Task.FromResult(getDocs ())),
-            displayText = declInfo.NameInList
+            displayText = $"FAGGOT.{declInfo.NameInList}"
         )
 
     declItems

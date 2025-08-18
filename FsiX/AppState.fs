@@ -9,12 +9,7 @@ open FSharpPlus
 open FsiX.Features
 open FsiX.ProjectLoading
 
-open FsiX.ProjectReloading.FileWatcher
 open PrettyPrompt
-
-type private ReloadingState =
-    { Agent: MailboxProcessor<Agent.Message>
-      FsWatcher: FileSystemWatcher }
 
 type FilePath = string
 
@@ -43,13 +38,26 @@ type BufferedStdoutWriter() =
         realStdout.Flush()
 
 
-type AppState private (sln: Solution, reloading, session: FsiEvaluationSession, globalConfig, localConfig, outStream) =
+
+open FsiX.Features.Reloading
+type AppState private (sln: Solution, session: FsiEvaluationSession, globalConfig, localConfig, outStream) =
+    let mutable reloadingState = mkReloadingState sln
     member _.Solution = sln
     member _.InteractiveChecker = session.InteractiveChecker
 
-    member _.EvalCode(code, token) =
+    member this.EvalCode(code, token) =
         try
             session.EvalInteraction(code, token)
+            (*
+            let firstKeyword = 
+              code 
+              |> String.split " "
+              |> Seq.tryHead 
+              |> Option.defaultValue ""
+            if firstKeyword = "open"
+            *)
+            handleNewAsmFromRepl (Array.last session.DynamicAssemblies) reloadingState
+            //session.AddBoundValue("assemblies", session.DynamicAssemblies)
         with _ ->
             ()
     member _.OutStream = outStream
@@ -69,21 +77,21 @@ type AppState private (sln: Solution, reloading, session: FsiEvaluationSession, 
         | None -> failwith "No PromptConfiguration was found!"
         | Some v -> (v.Value.ReflectionValue :?> PromptConfiguration)
 
-    member _.Reload(fileToReloadOpt, token: CancellationToken) =
-        async {
-            let! result =
-                reloading.Agent.PostAndAsyncReply(fun this -> Agent.Reload(session.EvalScript, fileToReloadOpt, this))
-
-            match result with
-            | Ok() -> printfn "Reloaded!"
-            | Error ex -> printfn $"Error! {ex}"
-        }
-        |> fun s -> Async.StartAsTask(s, cancellationToken = token)
-
     member _.GetCompletions(text, caret, word) =
         AutoCompletion.getCompletions session text caret word
 
     static member mkAppState sln =
+        let solutionToFsiArgs (sln: Solution) =
+            let dlls = sln.Projects |> Seq.map _.TargetPath |> Seq.rev |> Seq.toList
+
+            let nugets =
+                sln.Projects
+                |> Seq.collect _.PackageReferences
+                |> Seq.map _.FullPath
+                |> Seq.distinct
+                |> Seq.toList
+
+            [| "fsi"; yield! nugets |> Seq.append dlls |> Seq.map (sprintf "-r:%s") |]
         task {
             let globalConfigTask = Configuration.loadGlobalConfig ()
             let localConfigTask = Configuration.loadLocalConfig ()
@@ -100,14 +108,7 @@ type AppState private (sln: Solution, reloading, session: FsiEvaluationSession, 
                     stdout,
                     collectible = true
                 )
-
-            let checker = fsiSession.InteractiveChecker
-
-            let reloadState =
-                let agent = Agent.makeAgent checker sln
-                let watch = Agent.makeWatcher agent sln
-                { Agent = agent; FsWatcher = watch }
-
+              
             let! globalConfig, localConfig = Task.map2 tuple2 globalConfigTask localConfigTask
-            return AppState(sln, reloadState, fsiSession, globalConfig, localConfig, out)
+            return AppState(sln, fsiSession, globalConfig, localConfig, out)
         }
