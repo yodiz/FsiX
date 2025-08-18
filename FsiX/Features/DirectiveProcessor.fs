@@ -21,6 +21,7 @@ let runOpenDirective fileToOpen (app: AppState) token = task {
     let runOpen (l: LongIdent) =
         let path =
             l |>  Seq.map _.idText |> Seq.toList |> String.concat "."
+        System.Console.WriteLine($"\u001b[90m open {path} \u001b[0m")
         app.EvalCode($"open {path}", token)
 
     runOpen l
