@@ -52,9 +52,9 @@ let getFsCompletions (fsiSession: Shell.FsiEvaluationSession) text caret word =
             |> _.ToFormattedString()
 
         CompletionItem(
-            replacementText = "FAGGOT",
+            replacementText = declInfo.NameInCode,
             getExtendedDescription = (fun _ -> Task.FromResult(getDocs ())),
-            displayText = $"FAGGOT.{declInfo.NameInList}"
+            displayText = declInfo.NameInList
         )
 
     declItems
@@ -86,8 +86,7 @@ module Directives =
 
         String.drop i entry
 
-    let commandCompletions (text: string) carret wordToReplace =
-
+    let commandCompletions (text: string) carret (wordToReplace: string) = 
         if not <| String.contains ' ' text then
             directives
             |> Seq.sortByDescending (fun keyword -> scoreCandidate wordToReplace keyword)
@@ -107,13 +106,17 @@ module Directives =
                 let lastPart = textList |> Seq.skip carret |> Seq.takeWhile (fun c -> c <> ' ')
                 Seq.append (Seq.rev firstPart) lastPart |> String.ofSeq
 
-            if text |> String.contains Path.DirectorySeparatorChar then
-                let currentDir = Path.GetDirectoryName currentWord
-
+            let isDirectory =
+               text |> String.contains Path.DirectorySeparatorChar
+               || text.StartsWith "#open"
+               || text.StartsWith ":open"
+            if isDirectory then
+                let currentDir = [|Directory.GetCurrentDirectory(); Path.GetDirectoryName currentWord |] |> Path.Combine
                 if Directory.Exists currentDir then
                     Directory.EnumerateFiles currentDir
                     |> Seq.append (Directory.EnumerateDirectories currentDir |> Seq.map (fun d -> d + "/"))
-                    |> Seq.map (mkReplacement currentWord)
+                    |> Seq.map (fun e -> Path.GetRelativePath(currentDir, e))
+                    //|> Seq.map (mkReplacement currentWord)
                     |> Seq.sortByDescending (fun fsEntry -> scoreCandidate wordToReplace fsEntry)
                     |> Seq.map (fun fsEntry -> CompletionItem(replacementText = fsEntry, displayText = fsEntry))
                     |> Seq.toList
