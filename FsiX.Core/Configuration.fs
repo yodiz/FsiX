@@ -12,12 +12,12 @@ let loadDllString = $"#r \"{prettyPromptDll}\"\n"
 
 
 
+open PrettyPrompt.Consoles
 let getDefaultConfig () =
     task {
         let! defaultConfig =
             let asm = Assembly.GetExecutingAssembly()
-            let asmName = asm.GetName().Name
-            use stream = asm.GetManifestResourceStream $"{asmName}.repl.fsx"
+            use stream = asm.GetManifestResourceStream $"FsiX.repl.fsx"
             use reader = new StreamReader(stream)
             reader.ReadToEndAsync()
 

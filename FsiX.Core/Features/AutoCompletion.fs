@@ -72,8 +72,7 @@ module Directives =
               "help"
               "clear"
               "quit"
-              "open"
-              "reload" ]
+              "open" ]
 
     open System.IO
 
