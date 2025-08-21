@@ -1,4 +1,4 @@
-### FsiX
+### 🔥 FsiX 🔥
 
 A better REPL for F# with project/solution support and hot reloading.  
 Brings REPL driven development to F#!
@@ -6,7 +6,7 @@ Brings REPL driven development to F#!
 ---
 ### Demo
 
-todo
+`todo`
 
 ---
 
@@ -54,10 +54,10 @@ todo
 
 - **Modern REPL Experience**
 
-    Autocompletion, history, and more niceties via PrettyPrompt
+    Autocompletion, history, and more niceties via [PrettyPrompt](https://github.com/waf/PrettyPrompt)
 
 
-## Installation
+## 🚀 Installation
 
 If your project uses regular .NET SDK:
 ```
@@ -75,14 +75,16 @@ dotnet fsix #or fsix-web
 ```
 in the root dir of your project
 
-### Configuration
-    There is configuration file in `~/.config/fsix/repl.fsx` if you are on GNU/Linux and `%appdata%\fsix\repl.fsx` if you are on windows.
-    It's basically just an F# script which is being run on repl start, which has to contain `replConfig` object with prompt configuration.
-    FsiX will also load on start `.repl.fsix` file if it's present in current dir.
+### 🛠 Configuration
 
-### Future features
-- Integration with Conjure
-- (Maybe) n-repl support
+   There is configuration file in `~/.config/fsix/repl.fsx` if you are on GNU/Linux and `%appdata%\fsix\repl.fsx` if you are on windows.
+   It's basically just an F# script which is being run on repl start, which has to contain `replConfig` object with prompt configuration.
+   FsiX will also load on start `.repl.fsix` file if it's present in current dir.
+
+### 📌 Future features
+- Integration with [Conjure](https://github.com/Olical/conjure)
+- (Maybe) [n-repl](https://nrepl.org/nrepl/index.html) support
+- Ability to add REPL to any of your projects just as library
 
 
 ## 🤝 Contributing
