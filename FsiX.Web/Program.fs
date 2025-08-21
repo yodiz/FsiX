@@ -1,2 +1,2 @@
 ﻿// For more information see https://aka.ms/fsharp-console-apps
-FsiX.EntryPoint.main false () |> _.GetAwaiter() |> _.GetResult()
+FsiX.EntryPoint.main true () |> _.GetAwaiter() |> _.GetResult()

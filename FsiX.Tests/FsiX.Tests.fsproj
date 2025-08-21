@@ -24,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\FsiX\FsiX.fsproj"/>
+        <ProjectReference Include="..\FsiX.Core\FsiX.Core.fsproj" />
     </ItemGroup>
 
 </Project>

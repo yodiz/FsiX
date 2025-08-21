@@ -74,18 +74,34 @@ type AppState private (sln: Solution, session: FsiEvaluationSession, globalConfi
     member _.GetCompletions(text, caret, word) =
         AutoCompletion.getCompletions session text caret word
 
-    static member mkAppState sln =
+    static member mkAppState useAllRefs sln =
         let solutionToFsiArgs (sln: Solution) =
-            let dlls = sln.Projects |> Seq.map _.TargetPath |> Seq.rev |> Seq.toList
+            let projectDlls =
+              sln.Projects 
+              |> Seq.map _.TargetPath 
+              |> Seq.rev
+              |> Seq.map (sprintf "-r:%s")
+            let dependencyDlls =
+              if useAllRefs then
+                  sln.Projects 
+                  |> Seq.collect _.OtherOptions
+                  |> Seq.filter (fun s -> s.StartsWith "-r" && s.EndsWith ".dll")
+                  |> Seq.filter (fun s -> not <| s.Contains "System")
+              else Seq.empty
 
             let nugets =
                 sln.Projects
                 |> Seq.collect _.PackageReferences
                 |> Seq.map _.FullPath
-                |> Seq.distinct
-                |> Seq.toList
+                |> Seq.map (sprintf "-r:%s")
 
-            [| "fsi"; yield! nugets |> Seq.append dlls |> Seq.map (sprintf "-r:%s") |]
+            [| "fsi"; 
+               yield!
+                  projectDlls
+                  |> Seq.append nugets
+                  |> Seq.append dependencyDlls
+                  |> Seq.distinct
+            |]
         task {
             let globalConfigTask = Configuration.loadGlobalConfig ()
             let localConfigTask = Configuration.loadLocalConfig ()

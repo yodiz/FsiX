@@ -1,8 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsiX", "FsiX\FsiX.fsproj", "{5CD451A7-C52D-4EA0-B03D-8BEB92FC6016}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsiX.Core", "FsiX.Core\FsiX.Core.fsproj", "{5CD451A7-C52D-4EA0-B03D-8BEB92FC6016}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsiX.Tests", "FsiX.Tests\FsiX.Tests.fsproj", "{8BF96737-DC9A-4F24-A21A-3475A1428316}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsiX", "FsiX\FsiX.fsproj", "{0A2EC1B2-2631-4254-AE3C-C27A63FB7D01}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsiX.Web", "FsiX.Web\FsiX.Web.fsproj", "{F22559EE-A425-41EF-B529-51F51C31227D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +22,13 @@ Global
 		{8BF96737-DC9A-4F24-A21A-3475A1428316}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8BF96737-DC9A-4F24-A21A-3475A1428316}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8BF96737-DC9A-4F24-A21A-3475A1428316}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A2EC1B2-2631-4254-AE3C-C27A63FB7D01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A2EC1B2-2631-4254-AE3C-C27A63FB7D01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A2EC1B2-2631-4254-AE3C-C27A63FB7D01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A2EC1B2-2631-4254-AE3C-C27A63FB7D01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F22559EE-A425-41EF-B529-51F51C31227D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F22559EE-A425-41EF-B529-51F51C31227D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F22559EE-A425-41EF-B529-51F51C31227D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F22559EE-A425-41EF-B529-51F51C31227D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

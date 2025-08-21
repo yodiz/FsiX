@@ -15,6 +15,7 @@ type Solution =
       Projects: ProjectOptions list
       Files: Map<FileName, FSharpProjectOptions> }
 
+let a = {| someVal = "saaa"|}
 let loadSolution (projectDirectory: string) =
     let projectFile =
         projectDirectory
