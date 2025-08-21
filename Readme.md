@@ -3,13 +3,14 @@
 A better REPL for F# with project/solution support and hot reloading.  
 Brings REPL driven development to F#!
 
+
+### 📹 Demo
+
+
+https://github.com/user-attachments/assets/fb14365c-758a-4603-b729-94e2eebe006d
+
+
 ---
-### Demo
-
-`todo`
-
----
-
 ## ✨ Features
 
 - **Project & Solution Support** (`*.fsproj` / `*.sln`)  
