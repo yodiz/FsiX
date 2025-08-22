@@ -48,6 +48,10 @@ let loadGlobalConfig () =
         if File.Exists configPath then
             return! File.ReadAllTextAsync configPath >>= patchDllIfNeeded
         else
+            configPath 
+              |> Path.GetDirectoryName
+              |> Directory.CreateDirectory
+              |> ignore
             let! defaultConfig = getDefaultConfig ()
             do! File.WriteAllTextAsync(configPath, defaultConfig)
             return defaultConfig
