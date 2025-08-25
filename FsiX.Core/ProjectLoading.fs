@@ -6,6 +6,7 @@ open FSharp.Compiler.CodeAnalysis
 open Ionide.ProjInfo
 
 open Ionide.ProjInfo.Types
+open FsiX.Utils
 
 
 type FileName = string
@@ -20,7 +21,12 @@ let loadSolution (projectDirectory: string) =
     let projectFile =
         projectDirectory
         |> Directory.EnumerateFiles
-        |> Seq.find (fun s -> s.EndsWith ".fsproj" || s.EndsWith ".sln")
+        |> Seq.tryFind (fun s -> s.EndsWith ".fsproj" || s.EndsWith ".sln")
+    match projectFile with
+    | None ->
+      Logging.logWarning "Couldnt find any solution or project"
+      { FsProjects = []; Projects = []; Files = Map.empty}
+    | Some projectFile ->
 
     let projectDirectory: DirectoryInfo = Directory.GetParent projectFile
     let toolsPath = Init.init projectDirectory None

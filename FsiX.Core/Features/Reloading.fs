@@ -3,6 +3,7 @@ open System
 open System.Reflection
 
 open FsiX.ProjectLoading
+open FsiX.Utils
 
 
 //todo 
@@ -100,7 +101,7 @@ let handleNewAsmFromRepl (asm: Assembly) (st: State) =
     match potentialReplacement with
     | None -> ()
     | Some methodToReplace ->
-      Console.WriteLine("\u001b[90m Updating method " + methodToReplace.FullName + "\u001b[0m")
+      Logging.logInfo <| "Updating method" + methodToReplace.FullName
       detourMethod methodToReplace.MethodInfo m.MethodInfo
       ()
   {st with LastAssembly = Some asm}

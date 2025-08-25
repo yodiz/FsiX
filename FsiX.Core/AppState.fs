@@ -8,6 +8,7 @@ open FSharp.Compiler.Interactive.Shell
 open FSharpPlus
 open FsiX.Features
 open FsiX.ProjectLoading
+open FsiX.Utils
 
 open PrettyPrompt
 
@@ -80,6 +81,13 @@ type AppState private (sln: Solution, session: FsiEvaluationSession, globalConfi
               sln.Projects 
               |> Seq.map _.TargetPath 
               |> Seq.rev
+              |> Seq.toList
+            if Seq.exists (File.Exists >> not) projectDlls then
+              Logging.logError "Pleaase build your project before running REPL"
+              Environment.Exit 1
+
+            let projectDlls =
+              projectDlls
               |> Seq.map (sprintf "-r:%s")
             let dependencyDlls =
               if useAllRefs then

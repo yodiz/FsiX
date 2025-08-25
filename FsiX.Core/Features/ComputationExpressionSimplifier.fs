@@ -4,6 +4,7 @@ open Fantomas.Core.SyntaxOak
 open Fantomas.Core
 
 open FSharpPlus
+open FsiX.Utils
 
 let parse code =
     async {
@@ -180,7 +181,7 @@ let rewriteCompExpr code =
                 let! code = CodeFormatter.FormatOakAsync rewrittenAst |>> String.trimEnd " \n"
 
                 let logCode code = 
-                  Console.WriteLine("\u001b[90mRewriting user computation expresison input to: \n" + code + "\u001b[0m")
+                  Logging.logInfo $"Rewriting user computation expresison input to: \n {code}"
 
                 if parsed.hasTupleHack then
                     let code = code.Substring(0, code.Length - 2)

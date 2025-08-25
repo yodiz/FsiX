@@ -2,11 +2,12 @@
 
     <PropertyGroup>
         <OutputType>Library</OutputType>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
         <RootNamespace>FsiX</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
+        <Compile Include="Utils.fs"/>
         <Compile Include="ProjectLoading.fs"/>
         <Compile Include="Configuration.fs"/>
         <Compile Include="Features\Reloading.fs" />
