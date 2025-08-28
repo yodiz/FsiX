@@ -6,7 +6,7 @@ open System.Reflection
 open FSharpPlus
 
 let prettyPromptDll =
-    typeof<PrettyPrompt.PromptConfiguration> |> _.Assembly |> _.Location
+    typeof<PrettyPrompt.PromptConfiguration> |> _.Assembly |> _.Location |> _.Replace("\\", "\\\\")
 
 let loadDllString = $"#r \"{prettyPromptDll}\"\n"
 
